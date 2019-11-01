@@ -1,0 +1,6 @@
+git init
+git add .
+git commit -m demo
+git remote add image_viewer https://github.com/pydemo/image_viewer.git
+git remote -v
+git push --set-upstream image_viewer master
