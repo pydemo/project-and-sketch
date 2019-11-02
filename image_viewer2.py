@@ -9,7 +9,7 @@
 import glob
 import os
 import wx
-from wx.lib.pubsub import Publisher
+from pubsub import pub 
 
 ########################################################################
 class ViewerPanel(wx.Panel):
@@ -25,7 +25,7 @@ class ViewerPanel(wx.Panel):
         self.currentPicture = 0
         self.totalPictures = 0
         self.photoMaxSize = height - 200
-        Publisher().subscribe(self.updateImages, ("update images"))
+        pub.subscribe(self.updateImages, ("update images"))
 
         self.slideTimer = wx.Timer(None)
         self.slideTimer.Bind(wx.EVT_TIMER, self.update)
@@ -86,7 +86,7 @@ class ViewerPanel(wx.Panel):
         self.imageCtrl.SetBitmap(wx.BitmapFromImage(img))
         self.imageLabel.SetLabel(image_name)
         self.Refresh()
-        Publisher().sendMessage("resize", "")
+        pub.sendMessage("resize", "")
         
     #----------------------------------------------------------------------
     def nextPicture(self):
@@ -119,7 +119,7 @@ class ViewerPanel(wx.Panel):
         self.nextPicture()
         
     #----------------------------------------------------------------------
-    def updateImages(self, msg):
+    def updateImages(self, msg, arg2=None):
         """
         Updates the picPaths list to contain the current folder's images
         """
@@ -166,7 +166,7 @@ class ViewerFrame(wx.Frame):
         wx.Frame.__init__(self, None, title="Image Viewer")
         panel = ViewerPanel(self)
         self.folderPath = ""
-        Publisher().subscribe(self.resizeFrame, ("resize"))
+        pub.subscribe(self.resizeFrame, ("resize"))
         
         self.initToolbar()
         self.sizer = wx.BoxSizer(wx.VERTICAL)
@@ -202,10 +202,10 @@ class ViewerFrame(wx.Frame):
         
         if dlg.ShowModal() == wx.ID_OK:
             self.folderPath = dlg.GetPath()
-            print self.folderPath
-            picPaths = glob.glob(self.folderPath + "\\*.jpg")
-            print picPaths
-        Publisher().sendMessage("update images", picPaths)
+            print (self.folderPath)
+            picPaths = glob.glob(self.folderPath + "\\*.JPG")
+            print (picPaths)
+        pub.sendMessage("update images", message=picPaths)
         
     #----------------------------------------------------------------------
     def resizeFrame(self, msg):
