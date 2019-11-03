@@ -2,6 +2,8 @@
 import glob
 import os, math
 import wx
+import cv2
+import numpy as np
 from pubsub import pub 
 from pprint import pprint as pp
 import cv2
@@ -28,13 +30,24 @@ class ViewerPanel(wx.Panel):
         self.photoMaxSize = height - 200
         pub.subscribe(self.updateImages, ("update images"))
 
-        self.slideTimer = wx.Timer(None)
+        self.slideTimer = wx.Timer(self)
         self.slideTimer.Bind(wx.EVT_TIMER, self.update)
         
         self.layout()
         dr=r'C:\Users\alex_\OneDrive\Pictures\Sony7rM4\55mm\protest\1-20-2019\insta_base'
-        self.files=glob.glob(os.path.join(dr, '*.JPG'))
-        self.updateImages(msg=self.files)
+        self.picPaths=glob.glob(os.path.join(dr, '*.JPG'))
+        self.updateImages(msg=self.picPaths)
+        self.Bind(wx.EVT_TIMER, self.OnTest1Timer)
+    def OnTest1Start(self, evt):
+        self.t1 = wx.Timer(self)
+        self.t1.Start(1000)
+        self.log.write("EVT_TIMER timer started\n")
+        self.t1b2.Enable()
+        
+    def OnTest1Timer(self, evt):
+        print ("got EVT_TIMER event\n")     
+        
+        self.nextPicture()
         
     #----------------------------------------------------------------------
     def layout(self):
@@ -81,14 +94,21 @@ class ViewerPanel(wx.Panel):
             
             # convert to a data stream
             stream = cStringIO.BytesIO(data)
-            
-            # convert to a bitmap
-            im= wx.ImageFromStream( stream )
+            img= wx.ImageFromStream( stream )
             #pp(dir(im))
-            print(im.GetSize())
+            W = img.GetWidth()
+            H = img.GetHeight()
+            print('wxPython:',img.GetSize(), W, H)   
+            if 1:            
+                stream.seek(0)            
+                cv = cv2.imdecode(np.asarray( bytearray(stream.read() ) , dtype=np.uint8), 0 )
+                o_h, o_w = cv.shape
+                print('cv2:',o_h, o_w)
+                # convert to a bitmap
+
             
             
-        img = wx.Image(image, wx.BITMAP_TYPE_JPEG)
+        #img = wx.Image(image, wx.BITMAP_TYPE_JPEG)
         # scale the image, preserving the aspect ratio
         W = img.GetWidth()
         H = img.GetHeight()
@@ -100,7 +120,7 @@ class ViewerPanel(wx.Panel):
             NewH = self.photoMaxSize
             NewW = self.photoMaxSize * W / H
         img = img.Scale(NewW,NewH)
-        if H>W:
+        if o_h> o_w:
         
             img_centre = wx.Point( img.GetWidth()/2, img.GetHeight()/2 )
       
@@ -138,6 +158,7 @@ class ViewerPanel(wx.Panel):
         Called when the slideTimer's timer event fires. Loads the next
         picture from the folder by calling th nextPicture method
         """
+        print('timer')
         self.nextPicture()
         
     #----------------------------------------------------------------------
@@ -170,6 +191,7 @@ class ViewerPanel(wx.Panel):
         """
         btn = event.GetEventObject()
         label = btn.GetLabel()
+        print (label)
         if label == "Slide Show":
             self.slideTimer.Start(3000)
             btn.SetLabel("Stop")
