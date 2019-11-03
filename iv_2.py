@@ -7,24 +7,253 @@ import numpy as np
 from pubsub import pub 
 from pprint import pprint as pp
 import cv2
+from six import unichr
+
 try:
 	import cStringIO
 except ImportError:
 	import io as cStringIO
+
+#----------------------------------------------------------------------
+
+keyMap = {
+    wx.WXK_BACK : "WXK_BACK",
+    wx.WXK_TAB : "WXK_TAB",
+    wx.WXK_RETURN : "WXK_RETURN",
+    wx.WXK_ESCAPE : "WXK_ESCAPE",
+    wx.WXK_SPACE : "WXK_SPACE",
+    wx.WXK_DELETE : "WXK_DELETE",
+    wx.WXK_START : "WXK_START",
+    wx.WXK_LBUTTON : "WXK_LBUTTON",
+    wx.WXK_RBUTTON : "WXK_RBUTTON",
+    wx.WXK_CANCEL : "WXK_CANCEL",
+    wx.WXK_MBUTTON : "WXK_MBUTTON",
+    wx.WXK_CLEAR : "WXK_CLEAR",
+    wx.WXK_SHIFT : "WXK_SHIFT",
+    wx.WXK_ALT : "WXK_ALT",
+    wx.WXK_MENU : "WXK_MENU",
+    wx.WXK_PAUSE : "WXK_PAUSE",
+    wx.WXK_CAPITAL : "WXK_CAPITAL",
+    #wx.WXK_PRIOR : "WXK_PRIOR",
+    #wx.WXK_NEXT : "WXK_NEXT",
+    wx.WXK_END : "WXK_END",
+    wx.WXK_HOME : "WXK_HOME",
+    wx.WXK_LEFT : "WXK_LEFT",
+    wx.WXK_UP : "WXK_UP",
+    wx.WXK_RIGHT : "WXK_RIGHT",
+    wx.WXK_DOWN : "WXK_DOWN",
+    wx.WXK_SELECT : "WXK_SELECT",
+    wx.WXK_PRINT : "WXK_PRINT",
+    wx.WXK_EXECUTE : "WXK_EXECUTE",
+    wx.WXK_SNAPSHOT : "WXK_SNAPSHOT",
+    wx.WXK_INSERT : "WXK_INSERT",
+    wx.WXK_HELP : "WXK_HELP",
+    wx.WXK_NUMPAD0 : "WXK_NUMPAD0",
+    wx.WXK_NUMPAD1 : "WXK_NUMPAD1",
+    wx.WXK_NUMPAD2 : "WXK_NUMPAD2",
+    wx.WXK_NUMPAD3 : "WXK_NUMPAD3",
+    wx.WXK_NUMPAD4 : "WXK_NUMPAD4",
+    wx.WXK_NUMPAD5 : "WXK_NUMPAD5",
+    wx.WXK_NUMPAD6 : "WXK_NUMPAD6",
+    wx.WXK_NUMPAD7 : "WXK_NUMPAD7",
+    wx.WXK_NUMPAD8 : "WXK_NUMPAD8",
+    wx.WXK_NUMPAD9 : "WXK_NUMPAD9",
+    wx.WXK_MULTIPLY : "WXK_MULTIPLY",
+    wx.WXK_ADD : "WXK_ADD",
+    wx.WXK_SEPARATOR : "WXK_SEPARATOR",
+    wx.WXK_SUBTRACT : "WXK_SUBTRACT",
+    wx.WXK_DECIMAL : "WXK_DECIMAL",
+    wx.WXK_DIVIDE : "WXK_DIVIDE",
+    wx.WXK_F1 : "WXK_F1",
+    wx.WXK_F2 : "WXK_F2",
+    wx.WXK_F3 : "WXK_F3",
+    wx.WXK_F4 : "WXK_F4",
+    wx.WXK_F5 : "WXK_F5",
+    wx.WXK_F6 : "WXK_F6",
+    wx.WXK_F7 : "WXK_F7",
+    wx.WXK_F8 : "WXK_F8",
+    wx.WXK_F9 : "WXK_F9",
+    wx.WXK_F10 : "WXK_F10",
+    wx.WXK_F11 : "WXK_F11",
+    wx.WXK_F12 : "WXK_F12",
+    wx.WXK_F13 : "WXK_F13",
+    wx.WXK_F14 : "WXK_F14",
+    wx.WXK_F15 : "WXK_F15",
+    wx.WXK_F16 : "WXK_F16",
+    wx.WXK_F17 : "WXK_F17",
+    wx.WXK_F18 : "WXK_F18",
+    wx.WXK_F19 : "WXK_F19",
+    wx.WXK_F20 : "WXK_F20",
+    wx.WXK_F21 : "WXK_F21",
+    wx.WXK_F22 : "WXK_F22",
+    wx.WXK_F23 : "WXK_F23",
+    wx.WXK_F24 : "WXK_F24",
+    wx.WXK_NUMLOCK : "WXK_NUMLOCK",
+    wx.WXK_SCROLL : "WXK_SCROLL",
+    wx.WXK_PAGEUP : "WXK_PAGEUP",
+    wx.WXK_PAGEDOWN : "WXK_PAGEDOWN",
+    wx.WXK_NUMPAD_SPACE : "WXK_NUMPAD_SPACE",
+    wx.WXK_NUMPAD_TAB : "WXK_NUMPAD_TAB",
+    wx.WXK_NUMPAD_ENTER : "WXK_NUMPAD_ENTER",
+    wx.WXK_NUMPAD_F1 : "WXK_NUMPAD_F1",
+    wx.WXK_NUMPAD_F2 : "WXK_NUMPAD_F2",
+    wx.WXK_NUMPAD_F3 : "WXK_NUMPAD_F3",
+    wx.WXK_NUMPAD_F4 : "WXK_NUMPAD_F4",
+    wx.WXK_NUMPAD_HOME : "WXK_NUMPAD_HOME",
+    wx.WXK_NUMPAD_LEFT : "WXK_NUMPAD_LEFT",
+    wx.WXK_NUMPAD_UP : "WXK_NUMPAD_UP",
+    wx.WXK_NUMPAD_RIGHT : "WXK_NUMPAD_RIGHT",
+    wx.WXK_NUMPAD_DOWN : "WXK_NUMPAD_DOWN",
+    #wx.WXK_NUMPAD_PRIOR : "WXK_NUMPAD_PRIOR",
+    wx.WXK_NUMPAD_PAGEUP : "WXK_NUMPAD_PAGEUP",
+    #wx.WXK_NUMPAD_NEXT : "WXK_NUMPAD_NEXT",
+    wx.WXK_NUMPAD_PAGEDOWN : "WXK_NUMPAD_PAGEDOWN",
+    wx.WXK_NUMPAD_END : "WXK_NUMPAD_END",
+    wx.WXK_NUMPAD_BEGIN : "WXK_NUMPAD_BEGIN",
+    wx.WXK_NUMPAD_INSERT : "WXK_NUMPAD_INSERT",
+    wx.WXK_NUMPAD_DELETE : "WXK_NUMPAD_DELETE",
+    wx.WXK_NUMPAD_EQUAL : "WXK_NUMPAD_EQUAL",
+    wx.WXK_NUMPAD_MULTIPLY : "WXK_NUMPAD_MULTIPLY",
+    wx.WXK_NUMPAD_ADD : "WXK_NUMPAD_ADD",
+    wx.WXK_NUMPAD_SEPARATOR : "WXK_NUMPAD_SEPARATOR",
+    wx.WXK_NUMPAD_SUBTRACT : "WXK_NUMPAD_SUBTRACT",
+    wx.WXK_NUMPAD_DECIMAL : "WXK_NUMPAD_DECIMAL",
+    wx.WXK_NUMPAD_DIVIDE : "WXK_NUMPAD_DIVIDE",
+
+    wx.WXK_WINDOWS_LEFT : "WXK_WINDOWS_LEFT",
+    wx.WXK_WINDOWS_RIGHT : "WXK_WINDOWS_RIGHT",
+    wx.WXK_WINDOWS_MENU : "WXK_WINDOWS_MENU",
+
+    wx.WXK_SPECIAL1 : "WXK_SPECIAL1",
+    wx.WXK_SPECIAL2 : "WXK_SPECIAL2",
+    wx.WXK_SPECIAL3 : "WXK_SPECIAL3",
+    wx.WXK_SPECIAL4 : "WXK_SPECIAL4",
+    wx.WXK_SPECIAL5 : "WXK_SPECIAL5",
+    wx.WXK_SPECIAL6 : "WXK_SPECIAL6",
+    wx.WXK_SPECIAL7 : "WXK_SPECIAL7",
+    wx.WXK_SPECIAL8 : "WXK_SPECIAL8",
+    wx.WXK_SPECIAL9 : "WXK_SPECIAL9",
+    wx.WXK_SPECIAL10 : "WXK_SPECIAL10",
+    wx.WXK_SPECIAL11 : "WXK_SPECIAL11",
+    wx.WXK_SPECIAL12 : "WXK_SPECIAL12",
+    wx.WXK_SPECIAL13 : "WXK_SPECIAL13",
+    wx.WXK_SPECIAL14 : "WXK_SPECIAL14",
+    wx.WXK_SPECIAL15 : "WXK_SPECIAL15",
+    wx.WXK_SPECIAL16 : "WXK_SPECIAL16",
+    wx.WXK_SPECIAL17 : "WXK_SPECIAL17",
+    wx.WXK_SPECIAL18 : "WXK_SPECIAL18",
+    wx.WXK_SPECIAL19 : "WXK_SPECIAL19",
+}
+
+if 'wxMac' in wx.PlatformInfo:
+    keyMap[wx.WXK_RAW_CONTROL] = 'WXK_RAW_CONTROL'
+    keyMap[wx.WXK_CONTROL] = "WXK_CONTROL"
+    keyMap[wx.WXK_COMMAND] = "WXK_COMMAND"
+else:
+    keyMap[wx.WXK_COMMAND] = "WXK_COMMAND"
+    keyMap[wx.WXK_CONTROL] = "WXK_CONTROL"
+
+
+
     
-    
+#----------------------------------------------------------------------
+
+class KeySink(wx.Window):
+    def __init__(self, parent):
+        wx.Window.__init__(self, parent, -1, style=wx.WANTS_CHARS
+                          #| wx.RAISED_BORDER
+                          #| wx.SUNKEN_BORDER
+                           , name="sink")
+
+        self.SetBackgroundColour(wx.BLUE)
+        self.haveFocus = False
+        self.callSkip = True
+        self.logKeyDn = True
+        self.logKeyUp = True
+        self.logChar = True
+
+        self.Bind(wx.EVT_PAINT, self.OnPaint)
+        self.Bind(wx.EVT_SET_FOCUS, self.OnSetFocus)
+        self.Bind(wx.EVT_KILL_FOCUS, self.OnKillFocus)
+        self.Bind(wx.EVT_MOUSE_EVENTS, self.OnMouse)
+
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+        self.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
+        self.Bind(wx.EVT_CHAR, self.OnChar)
+
+
+    def SetCallSkip(self, skip):
+        self.callSkip = skip
+
+    def SetLogKeyUp(self, val):
+        self.logKeyUp = val
+
+    def SetLogKeyDn(self, val):
+        self.logKeyDn = val
+
+    def SetLogChar(self, val):
+        self.logChar = val
+
+
+    def OnPaint(self, evt):
+        dc = wx.PaintDC(self)
+        rect = self.GetClientRect()
+        dc.SetTextForeground(wx.WHITE)
+        dc.DrawLabel("Click here and then press some keys",
+                     rect, wx.ALIGN_CENTER | wx.ALIGN_TOP)
+        if self.haveFocus:
+            dc.SetTextForeground(wx.GREEN)
+            dc.DrawLabel("Have Focus", rect, wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM)
+        else:
+            dc.SetTextForeground(wx.RED)
+            dc.DrawLabel("Need Focus!", rect, wx.ALIGN_RIGHT | wx.ALIGN_BOTTOM)
+
+
+    def OnSetFocus(self, evt):
+        self.haveFocus = True
+        self.Refresh()
+
+    def OnKillFocus(self, evt):
+        self.haveFocus = False
+        self.Refresh()
+
+    def OnMouse(self, evt):
+        if evt.ButtonDown():
+            self.SetFocus()
+
+
+    def OnKeyDown(self, evt):
+        if self.logKeyDn:
+            self.GetParent().keylog.LogKeyEvent("KeyDown", evt)
+        if self.callSkip:
+            evt.Skip()
+
+    def OnKeyUp(self, evt):
+        if self.logKeyUp:
+            self.GetParent().keylog.LogKeyEvent("KeyUp", evt)
+        if self.callSkip:
+            evt.Skip()
+
+    def OnChar(self, evt):
+        if self.logChar:
+            self.GetParent().keylog.LogKeyEvent("Char", evt)    
 
 ########################################################################
-class ViewerPanel(wx.Panel):
+class ViewerPanel( wx.Window):
     """"""
 
     #----------------------------------------------------------------------
     def __init__(self, parent):
         """Constructor"""
-        wx.Panel.__init__(self, parent)
-        
+        #wx.Panel.__init__(self, parent)
+        wx.Window.__init__(self, parent, -1, style=wx.WANTS_CHARS
+                          #| wx.RAISED_BORDER
+                          #| wx.SUNKEN_BORDER
+                           , name="sink")        
         width, height = wx.DisplaySize()
         self.picPaths = []
+        self.is_fs =False
+        self.btns={}
         self.currentPicture = 0
         self.totalPictures = 0
         self.photoMaxSize = height - 200
@@ -32,12 +261,93 @@ class ViewerPanel(wx.Panel):
 
         self.slideTimer = wx.Timer(self)
         self.slideTimer.Bind(wx.EVT_TIMER, self.update)
-        
+        displays = (wx.Display(i) for i in range(wx.Display.GetCount()))
+        sizes = [display.GetGeometry().GetSize() for display in displays]
+        d1=sizes[0]
+        self.dh, self.dw = d1.height, d1.width        
         self.layout()
         dr=r'C:\Users\alex_\OneDrive\Pictures\Sony7rM4\55mm\protest\1-20-2019\insta_base'
         self.picPaths=glob.glob(os.path.join(dr, '*.JPG'))
         self.updateImages(msg=self.picPaths)
         self.Bind(wx.EVT_TIMER, self.OnTest1Timer)
+        self.Bind(wx.EVT_KEY_DOWN, self.OnKeyDown)
+        #self.Bind(wx.EVT_KEY_UP, self.OnKeyUp)
+        #self.Bind(wx.EVT_CHAR, self.OnChar)        
+        self.SetFocus()
+       
+        
+        
+    def OnKeyUp(self, evt):
+        self.LogKeyEvent("KeyUp", evt)  
+    def OnChar(self, evt):
+        self.LogKeyEvent("Char", evt)       
+    def OnKeyDown(self, evt):
+        key_code = evt.GetKeyCode()
+        if key_code in [83]: #S
+            #start/stop slideshow
+            label="Slide Show"
+            btn=self.btns[label]
+            self.setSlideShow(btn)
+        elif key_code in [81]: #Exit
+            self.GetParent().Close()
+        elif key_code in [70]: #Full screen
+            self.is_fs = not self.is_fs
+            self.GetParent().ShowFullScreen(self.is_fs)           
+        elif key_code == wx.WXK_ESCAPE:
+            #self.GetParent().Close()
+            self.GetParent().ShowFullScreen(False)
+            label="Slide Show"
+            btn=self.btns[label]
+            if btn.GetLabel() in ['Stop']:
+                self.setSlideShow(btn)            
+        else:
+            evt.Skip()
+        keyname = keyMap.get(key_code, None)
+        self.LogKeyEvent("KeyDown", evt)  
+        
+    def LogKeyEvent(self, evType, evt):
+        keycode = evt.GetKeyCode()
+        keyname = keyMap.get(keycode, None)
+
+        if keyname is None:
+            if keycode < 256:
+                if keycode == 0:
+                    keyname = "NUL"
+                elif keycode < 27:
+                    keyname = u"Ctrl-%s" % unichr(ord('A') + keycode-1)
+                else:
+                    keyname = u"\"%s\"" % unichr(keycode)
+            else:
+                keyname = u"(%s)" % keycode
+
+        UniChr = ''
+        if "unicode" in wx.PlatformInfo:
+            UniChr = "\"" + unichr(evt.GetUnicodeKey()) + "\""
+
+        modifiers = ""
+        for mod, ch in [(evt.ControlDown(),    'C'),
+                        (evt.AltDown(),        'A'),
+                        (evt.ShiftDown(),      'S'),
+                        (evt.MetaDown(),       'M'),
+                        (evt.RawControlDown(), 'R'),]:
+            if mod:
+                modifiers += ch
+            else:
+                modifiers += '-'
+        if 0:
+            id = self.InsertItem(self.GetItemCount(), evType)
+            self.SetItem(id, 1, keyname)
+            self.SetItem(id, 2, str(keycode))
+            self.SetItem(id, 3, modifiers)
+            self.SetItem(id, 4, str(evt.GetUnicodeKey()))
+            self.SetItem(id, 5, UniChr)
+            self.SetItem(id, 6, str(evt.GetRawKeyCode()))
+            self.SetItem(id, 7, str(evt.GetRawKeyFlags()))
+
+            self.EnsureVisible(id)
+        else:
+            pp (dict(evType=evType, keyname=keyname,keycode=str(keycode),modifiers=modifiers, GetUnicodeKey=str(evt.GetUnicodeKey()), 
+            UniChr=UniChr, GetRawKeyCode=str(evt.GetRawKeyCode()), GetRawKeyFlags=str(evt.GetRawKeyFlags())))
     def OnTest1Start(self, evt):
         self.t1 = wx.Timer(self)
         self.t1.Start(1000)
@@ -48,7 +358,7 @@ class ViewerPanel(wx.Panel):
         print ("got EVT_TIMER event\n")     
         
         self.nextPicture()
-        
+    
     #----------------------------------------------------------------------
     def layout(self):
         """
@@ -80,7 +390,7 @@ class ViewerPanel(wx.Panel):
         """
         Builds a button, binds it to an event handler and adds it to a sizer
         """
-        btn = wx.Button(self, label=label)
+        self.btns[label]=btn = wx.Button(self, label=label)
         btn.Bind(wx.EVT_BUTTON, handler)
         sizer.Add(btn, 0, wx.ALL|wx.CENTER, 5)
         
@@ -103,7 +413,7 @@ class ViewerPanel(wx.Panel):
                 stream.seek(0)            
                 cv = cv2.imdecode(np.asarray( bytearray(stream.read() ) , dtype=np.uint8), 0 )
                 o_h, o_w = cv.shape
-                print('cv2:',o_h, o_w)
+                print('cv2:',o_h, o_w, self.dh, self.dw )
                 # convert to a bitmap
 
             
@@ -113,18 +423,29 @@ class ViewerPanel(wx.Panel):
         W = img.GetWidth()
         H = img.GetHeight()
         print (W,H, img.GetSize())
-        if W > H:
-            NewW = self.photoMaxSize
-            NewH = self.photoMaxSize * H / W
-        else:
-            NewH = self.photoMaxSize
-            NewW = self.photoMaxSize * W / H
-        img = img.Scale(NewW,NewH)
+        if 0:
+            if W > H:
+                NewW = self.photoMaxSize
+                NewH = self.photoMaxSize * H / W
+            else:
+                NewH = self.photoMaxSize
+                NewW = self.photoMaxSize * W / H
+            img = img.Scale(NewW,NewH)
+
+            
         if o_h> o_w:
+        
         
             img_centre = wx.Point( img.GetWidth()/2, img.GetHeight()/2 )
       
             img = img.Rotate(math.pi/2, img_centre)
+            
+        if o_h> self.dh:
+                NewH = self.dh
+                NewW = o_w * self.dh / o_h
+                print ('new:', NewH, NewW )
+                img = img.Scale(NewW,NewH)            
+        
         self.imageCtrl.SetBitmap(wx.BitmapFromImage(img))
         self.imageLabel.SetLabel(image_name)
         self.Refresh()
@@ -190,16 +511,18 @@ class ViewerPanel(wx.Panel):
         Starts and stops the slideshow
         """
         btn = event.GetEventObject()
+        self.setSlideShow(btn)
+        
+    def setSlideShow(self, btn):
         label = btn.GetLabel()
         print (label)
         if label == "Slide Show":
-            self.slideTimer.Start(3000)
+            self.slideTimer.Start(5000)
             btn.SetLabel("Stop")
         else:
             self.slideTimer.Stop()
             btn.SetLabel("Slide Show")
-        
-        
+            
 ########################################################################
 class ViewerFrame(wx.Frame):
     """"""
@@ -214,13 +537,17 @@ class ViewerFrame(wx.Frame):
         
         self.initToolbar()
         self.sizer = wx.BoxSizer(wx.VERTICAL)
+
+        
         self.sizer.Add(panel, 1, wx.EXPAND)
         self.SetSizer(self.sizer)
         
         self.Show()
         self.sizer.Fit(self)
         self.Center()
-        
+        #self.Maximize(True)
+        #self.ShowFullScreen(True)
+       
         
     #----------------------------------------------------------------------
     def initToolbar(self):
