@@ -1,15 +1,16 @@
-# ----------------------------------------
-# image_viewer2.py
-#
-# Created 03-20-2010
-#
-# Author: Mike Driscoll
-# ----------------------------------------
-
+# -*- coding: utf-8 -*-
 import glob
-import os
+import os, math
 import wx
 from pubsub import pub 
+from pprint import pprint as pp
+import cv2
+try:
+	import cStringIO
+except ImportError:
+	import io as cStringIO
+    
+    
 
 ########################################################################
 class ViewerPanel(wx.Panel):
@@ -31,6 +32,9 @@ class ViewerPanel(wx.Panel):
         self.slideTimer.Bind(wx.EVT_TIMER, self.update)
         
         self.layout()
+        dr=r'C:\Users\alex_\OneDrive\Pictures\Sony7rM4\55mm\protest\1-20-2019\insta_base'
+        self.files=glob.glob(os.path.join(dr, '*.JPG'))
+        self.updateImages(msg=self.files)
         
     #----------------------------------------------------------------------
     def layout(self):
@@ -71,10 +75,24 @@ class ViewerPanel(wx.Panel):
     def loadImage(self, image):
         """"""
         image_name = os.path.basename(image)
-        img = wx.Image(image, wx.BITMAP_TYPE_ANY)
+        if 1:
+            imageFile = image
+            data = open(imageFile, "rb").read()
+            
+            # convert to a data stream
+            stream = cStringIO.BytesIO(data)
+            
+            # convert to a bitmap
+            im= wx.ImageFromStream( stream )
+            #pp(dir(im))
+            print(im.GetSize())
+            
+            
+        img = wx.Image(image, wx.BITMAP_TYPE_JPEG)
         # scale the image, preserving the aspect ratio
         W = img.GetWidth()
         H = img.GetHeight()
+        print (W,H, img.GetSize())
         if W > H:
             NewW = self.photoMaxSize
             NewH = self.photoMaxSize * H / W
@@ -82,11 +100,15 @@ class ViewerPanel(wx.Panel):
             NewH = self.photoMaxSize
             NewW = self.photoMaxSize * W / H
         img = img.Scale(NewW,NewH)
-
+        if H>W:
+        
+            img_centre = wx.Point( img.GetWidth()/2, img.GetHeight()/2 )
+      
+            img = img.Rotate(math.pi/2, img_centre)
         self.imageCtrl.SetBitmap(wx.BitmapFromImage(img))
         self.imageLabel.SetLabel(image_name)
         self.Refresh()
-        pub.sendMessage("resize", "")
+        pub.sendMessage("resize", msg="")
         
     #----------------------------------------------------------------------
     def nextPicture(self):
@@ -123,7 +145,7 @@ class ViewerPanel(wx.Panel):
         """
         Updates the picPaths list to contain the current folder's images
         """
-        self.picPaths = msg.data
+        self.picPaths = msg
         self.totalPictures = len(self.picPaths)
         self.loadImage(self.picPaths[0])
         
@@ -164,7 +186,7 @@ class ViewerFrame(wx.Frame):
     def __init__(self):
         """Constructor"""
         wx.Frame.__init__(self, None, title="Image Viewer")
-        panel = ViewerPanel(self)
+        self.panel=panel = ViewerPanel(self)
         self.folderPath = ""
         pub.subscribe(self.resizeFrame, ("resize"))
         
@@ -204,8 +226,9 @@ class ViewerFrame(wx.Frame):
             self.folderPath = dlg.GetPath()
             print (self.folderPath)
             picPaths = glob.glob(self.folderPath + "\\*.JPG")
-            print (picPaths)
-        pub.sendMessage("update images", message=picPaths)
+            pp (picPaths)
+        #pub.sendMessage("update images", msg=picPaths)
+        #self.panel.updateImages(msg=picPaths)
         
     #----------------------------------------------------------------------
     def resizeFrame(self, msg):

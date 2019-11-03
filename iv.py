@@ -8,14 +8,14 @@ class PhotoCtrl(wx.App):
  
         self.panel = wx.Panel(self.frame)
  
-        self.PhotoMaxSize = 240
+        self.PhotoMaxSize = 440
  
         self.createWidgets()
         self.frame.Show()
  
     def createWidgets(self):
         instructions = 'Browse for an image'
-        img = wx.EmptyImage(240,240)
+        img = wx.EmptyImage(440,440)
         self.imageCtrl = wx.StaticBitmap(self.panel, wx.ID_ANY, 
                                          wx.BitmapFromImage(img))
  
