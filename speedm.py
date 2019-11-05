@@ -16,12 +16,13 @@ class MyFrame(wx.Frame):
         panel = wx.Panel(self)
 
         self.SpeedWindow = SM.SpeedMeter(panel,
-                                          extrastyle=SM.SM_DRAW_HAND |
+                                          extrastyle=#SM.SM_DRAW_HAND |
+                                          #SM.SM_DRAW_PARTIAL_SECTORS |
                                           SM.SM_DRAW_SECTORS |
-                                          SM.SM_DRAW_MIDDLE_TEXT |
-                                          SM.SM_DRAW_SECONDARY_TICKS |
-                                          SM.SM_DRAW_PARTIAL_FILLER |
-                                          SM.SM_DRAW_SHADOW
+                                          #SM.SM_DRAW_MIDDLE_TEXT |
+                                          #SM.SM_DRAW_SECONDARY_TICKS |
+                                          SM.SM_DRAW_PARTIAL_FILLER #|
+                                          #SM.SM_DRAW_SHADOW
                                           )
 
         # We Want To Simulate A Clock. Somewhat Tricky, But Did The Job
@@ -32,30 +33,30 @@ class MyFrame(wx.Frame):
 
         colours = [wx.SystemSettings.GetColour(0)]*12
         self.SpeedWindow.SetIntervalColours(colours)
-
-        ticks = [str(interval) for interval in intervals]
-        ticks[-1] = ""
-        ticks[0] = "12"
-        self.SpeedWindow.SetTicks(ticks)
-        self.SpeedWindow.SetTicksColour(wx.BLUE)
-        self.SpeedWindow.SetTicksFont(wx.Font(11, wx.SCRIPT, wx.NORMAL, wx.BOLD, True))
-        self.SpeedWindow.SetNumberOfSecondaryTicks(4)
+        if 0:
+            ticks = [str(interval) for interval in intervals]
+            ticks[-1] = ""
+            ticks[0] = "12"
+            self.SpeedWindow.SetTicks(ticks)
+            self.SpeedWindow.SetTicksColour(wx.BLUE)
+            self.SpeedWindow.SetTicksFont(wx.Font(11, wx.SCRIPT, wx.NORMAL, wx.BOLD, True))
+            self.SpeedWindow.SetNumberOfSecondaryTicks(4)
 
         # Set The Colour For The External Arc        
-        self.SpeedWindow.SetArcColour(wx.BLUE)
+        #self.SpeedWindow.SetArcColour(wx.BLUE)
 
-        self.SpeedWindow.SetHandColour(wx.BLACK)
+        #self.SpeedWindow.SetHandColour(wx.BLACK)
 
-        self.SpeedWindow.SetMiddleText("0 s")
-        self.SpeedWindow.SetMiddleTextColour(wx.RED)
+        #self.SpeedWindow.SetMiddleText("0 s")
+        #self.SpeedWindow.SetMiddleTextColour(wx.RED)
 
         # We Set The Background Colour Of The SpeedMeter OutSide The Control
-        self.SpeedWindow.SetSpeedBackground(wx.WHITE)
+        #self.SpeedWindow.SetSpeedBackground(wx.WHITE)
 
         # Set The Colour For The Shadow
-        self.SpeedWindow.SetShadowColour(wx.Colour(128, 128, 128))        
+        #self.SpeedWindow.SetShadowColour(wx.Colour(128, 128, 128))        
 
-        self.SpeedWindow.SetSpeedValue(0.0)
+        self.SpeedWindow.SetSpeedValue(0)
 
         # These Are Cosmetics For our SpeedMeter Control
 
@@ -88,8 +89,8 @@ class MyFrame(wx.Frame):
         else:
             self.currvalue = self.currvalue + 1
 
-        self.SpeedWindow.SetMiddleText(str(self.currvalue) + " s")            
-        self.SpeedWindow.SetSpeedValue(self.currvalue/5.0)
+        #self.SpeedWindow.SetMiddleText(str(self.currvalue) + " s")            
+        self.SpeedWindow.SetSpeedValue(self.currvalue/5 if self.currvalue/5 !=1.0 else 1.01)
 
 
     def OnStopClock(self, event):

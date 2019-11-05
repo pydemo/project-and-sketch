@@ -251,7 +251,23 @@ class BufferedWindow(wx.Window):
             if self.Height == 0:
                 self.Height = 1
         print (self.Width, self.Height)
-        self._Buffer = wx.Bitmap(self.Width, self.Height)
+        if 1:
+            filepath = 'test.JPG'
+            img = wx.Image(filepath, wx.BITMAP_TYPE_ANY)
+
+            img = img.Scale(self.Width, self.Height)
+            
+      
+            
+            
+        
+        
+       
+            self._Buffer = wx.BitmapFromImage(img)
+        else:
+            
+            
+            self._Buffer = wx.Bitmap(self.Width, self.Height)
         self.UpdateDrawing()
 
 
@@ -274,7 +290,7 @@ class BufferedWindow(wx.Window):
             dc.SelectObject(self._Buffer)
 
             self.Draw(dc)
-            # update the screen
+            ## update the screen
             wx.ClientDC(self).Blit(0, 0, self.Width, self.Height, dc, 0, 0)
         
 
@@ -346,12 +362,12 @@ class SpeedMeter(BufferedWindow):
         if self._extrastyle & SM_DRAW_PARTIAL_SECTORS and self._extrastyle & SM_DRAW_PARTIAL_FILLER:
             errstr = "\nERROR: Incompatible Options: SM_DRAW_PARTIAL_SECTORS Can Not Be Used In "
             errstr = errstr + "Conjunction With SM_DRAW_PARTIAL_FILLER."
-            raise errstr        
+            raise Exception(errstr)       
 
         if self._extrastyle & SM_DRAW_FANCY_TICKS and self._extrastyle & SM_ROTATE_TEXT:
             errstr = "\nERROR: Incompatible Options: SM_DRAW_FANCY_TICKS Can Not Be Used In "
             errstr = errstr + "Conjunction With SM_ROTATE_TEXT."
-            raise errstr  
+            raise Exception(errstr)
 
         if self._extrastyle & SM_DRAW_SHADOW and self._extrastyle & SM_DRAW_HAND == 0:
             errstr = "\nERROR: Incompatible Options: SM_DRAW_SHADOW Can Be Used Only In "
@@ -366,22 +382,22 @@ class SpeedMeter(BufferedWindow):
         self.SetSpeedValue()
         self.SetIntervalColours()
         self.SetArcColour()
-        self.SetTicks()
-        self.SetTicksFont()
-        self.SetTicksColour()
-        self.SetSpeedBackground()
-        self.SetHandColour()
-        self.SetShadowColour()
+        #self.SetTicks()
+        #self.SetTicksFont()
+        #self.SetTicksColour()
+        #self.SetSpeedBackground()
+        #self.SetHandColour()
+        #self.SetShadowColour()
         self.SetFillerColour()
         self.SetDirection()
-        self.SetNumberOfSecondaryTicks()
-        self.SetMiddleText()
-        self.SetMiddleTextFont()
-        self.SetMiddleTextColour()
-        self.SetFirstGradientColour()
-        self.SetSecondGradientColour()
-        self.SetHandStyle()
-        self.DrawExternalArc()
+        #self.SetNumberOfSecondaryTicks()
+        #self.SetMiddleText()
+        #self.SetMiddleTextFont()
+        #self.SetMiddleTextColour()
+        #self.SetFirstGradientColour()
+        #self.SetSecondGradientColour()
+        #self.SetHandStyle()
+        #self.DrawExternalArc()
         
         BufferedWindow.__init__(self, parent, id, pos, size,
                                 style=wx.NO_FULL_REPAINT_ON_RESIZE,
@@ -410,14 +426,28 @@ class SpeedMeter(BufferedWindow):
                           float(new_dim[1]) / self.dim[1]])
 
         # Create An Empty Bitmap
-        self.faceBitmap = wx.Bitmap(size.width, size.height)
+        if 1:
+            filepath = 'test.JPG'
+            img = wx.Image(filepath, wx.BITMAP_TYPE_ANY)
+
+            img = img.Scale(size.width, size.height)
+            
+      
+            
+            
+        
+        
+       
+            self.faceBitmap = wx.BitmapFromImage(img)
+        else:
+            self.faceBitmap = wx.Bitmap(size.width, size.height)
         
         #dc.BeginDrawing()
 
-        speedbackground = self.GetSpeedBackground()
+        #   speedbackground = self.GetSpeedBackground()
         # Set Background Of The Control        
-        dc.SetBackground(wx.Brush(speedbackground))
-        dc.Clear()
+        #dc.SetBackground(wx.Brush(speedbackground))
+        #dc.Clear()
 
         centerX = self.faceBitmap.GetWidth()/2
         centerY = self.faceBitmap.GetHeight()/2
@@ -489,10 +519,10 @@ class SpeedMeter(BufferedWindow):
         dc.SetPen(wx.TRANSPARENT_PEN)
 
         if self._extrastyle & SM_DRAW_PARTIAL_FILLER:
-            
+            r=165.0
             # Get Some Data For The Partial Filler
             fillercolour = self.GetFillerColour()                
-            fillerendradius = radius - 10.0*self.scale
+            fillerendradius = radius - r*self.scale
             fillerstartradius = radius
             
             if direction == "Advance":
@@ -509,495 +539,117 @@ class SpeedMeter(BufferedWindow):
 
             # Get The Sector In Which The Current Value Is
             intersection = self.GetIntersection(currentvalue, intervals)
-            sectorradius = radius - 10*self.scale
+            sectorradius = radius - r*self.scale
             
         else:
             
             sectorradius = radius
 
-        if self._extrastyle & SM_DRAW_PARTIAL_FILLER:
-            # Draw The Filler (Both In "Advance" And "Reverse" Directions)
-            
-            dc.SetBrush(wx.Brush(fillercolour))                
-            dc.DrawArc(xs2, ys2, xe2, ye2, centerX, centerY)
-                
-            if self._extrastyle & SM_DRAW_SECTORS == 0:
-                dc.SetBrush(wx.Brush(speedbackground))
-                xclean1, yclean1 = self.CircleCoords(sectorradius, -endangle, centerX, centerY)
-                xclean2, yclean2 = self.CircleCoords(sectorradius, -startangle-offset, centerX, centerY)
-                dc.DrawArc(xclean1, yclean1, xclean2, yclean2, centerX, centerY)
+
             
 
         # This Is Needed To Fill The Partial Sector Correctly
         xold, yold = self.CircleCoords(radius, startangle+endangle, centerX, centerY)
-        
-        # Draw The Sectors        
-        for ii, interval in enumerate(intervals):
+        if 1:
+            # Draw The Sectors        
+            for ii, interval in enumerate(intervals):
 
-            if direction == "Advance":
-                current = interval - start
-            else:
-                current = end - interval
-            
-            angle = (current/float(span))*(startangle-endangle) - startangle            
-            angletext = -((pi/2.0) + angle)*180/pi
-            textangles.append(angletext)
-            colourangles.append(angle)
-            xtick, ytick = self.CircleCoords(radius, angle, centerX, centerY)
-            
-            # Keep The Coordinates, We Will Need Them After To Position The Ticks            
-            xcoords.append(xtick)
-            ycoords.append(ytick)
-            x = xtick
-            y = ytick
-
-            if self._extrastyle & SM_DRAW_SECTORS:                
-                if self._extrastyle & SM_DRAW_PARTIAL_FILLER:
-                    if direction == "Advance":
-                        if current > currentvalue:
-                            x, y = self.CircleCoords(radius, angle, centerX, centerY)                    
-                        else:
-                            x, y = self.CircleCoords(sectorradius, angle, centerX, centerY)
-                    else:
-                        if current < end - currentvalue:
-                            x, y = self.CircleCoords(radius, angle, centerX, centerY)                    
-                        else:
-                            x, y = self.CircleCoords(sectorradius, angle, centerX, centerY)
+                if direction == "Advance":
+                    current = interval - start
                 else:
-                    x, y = self.CircleCoords(radius, angle, centerX, centerY)
-                    
+                    current = end - interval
+                
+                angle = (current/float(span))*(startangle-endangle) - startangle            
+                angletext = -((pi/2.0) + angle)*180/pi
+                textangles.append(angletext)
+                colourangles.append(angle)
+                xtick, ytick = self.CircleCoords(radius, angle, centerX, centerY)
+                
+                # Keep The Coordinates, We Will Need Them After To Position The Ticks            
+                xcoords.append(xtick)
+                ycoords.append(ytick)
+                x = xtick
+                y = ytick
 
-            if ii > 0:
-                if self._extrastyle & SM_DRAW_PARTIAL_FILLER and ii == intersection:
-                    # We Got The Interval In Which There Is The Current Value. If We Choose
-                    # A "Reverse" Direction, First We Draw The Partial Sector, Next The Filler
+                if self._extrastyle & SM_DRAW_SECTORS:                
+                    if self._extrastyle & SM_DRAW_PARTIAL_FILLER:
+                        if direction == "Advance":
+                            if current > currentvalue:
+                                x, y = self.CircleCoords(radius, angle, centerX, centerY)                    
+                            else:
+                                x, y = self.CircleCoords(sectorradius, angle, centerX, centerY)
+                        else:
+                            if current < end - currentvalue:
+                                x, y = self.CircleCoords(radius, angle, centerX, centerY)                    
+                            else:
+                                x, y = self.CircleCoords(sectorradius, angle, centerX, centerY)
+                    else:
+                        x, y = self.CircleCoords(radius, angle, centerX, centerY)
+                        
 
-                    dc.SetBrush(wx.Brush(speedbackground))
-                    
-                    if direction == "Reverse":
+                if ii > 0 :
+                    if self._extrastyle & SM_DRAW_PARTIAL_FILLER and ii == intersection:
+                        # We Got The Interval In Which There Is The Current Value. If We Choose
+                        # A "Reverse" Direction, First We Draw The Partial Sector, Next The Filler
+
+                        dc.SetBrush(wx.Brush(speedbackground))
+                        
+                        if direction == "Reverse":
+                            if self._extrastyle & SM_DRAW_SECTORS:
+                                dc.SetBrush(wx.Brush(colours[ii-1]))
+                                
+                            dc.DrawArc(xe2, ye2, xold, yold, centerX, centerY)
+                        
                         if self._extrastyle & SM_DRAW_SECTORS:
                             dc.SetBrush(wx.Brush(colours[ii-1]))
-                            
-                        dc.DrawArc(xe2, ye2, xold, yold, centerX, centerY)
-                    
-                    if self._extrastyle & SM_DRAW_SECTORS:
-                        dc.SetBrush(wx.Brush(colours[ii-1]))
-                    else:
-                        dc.SetBrush(wx.Brush(speedbackground))
-
-                                            
-                    dc.DrawArc(xs1, ys1, xe1, ye1, centerX, centerY)
-
-                    if self._extrastyle & SM_DRAW_SECTORS:
-                        dc.SetBrush(wx.Brush(colours[ii-1]))
-                        # Here We Draw The Rest Of The Sector In Which The Current Value Is
-                        if direction == "Advance":
-                            dc.DrawArc(xs1, ys1, x, y, centerX, centerY)
-                            x = xs1
-                            y = ys1
                         else:
-                            dc.DrawArc(xe2, ye2, x, y, centerX, centerY)
-                        
-                elif self._extrastyle & SM_DRAW_SECTORS:
-                    dc.SetBrush(wx.Brush(colours[ii-1]))
-                    
-                    # Here We Still Use The SM_DRAW_PARTIAL_FILLER Style, But We Are Not
-                    # In The Sector Where The Current Value Resides
-                    if self._extrastyle & SM_DRAW_PARTIAL_FILLER and ii != intersection:
-                        if direction == "Advance":
-                            dc.DrawArc(x, y, xold, yold, centerX, centerY)
-                        else:
-                            if ii < intersection:
-                                dc.DrawArc(x, y, xold, yold, centerX, centerY)
+                            dc.SetBrush(wx.Brush(speedbackground))
 
-                    # This Is The Case Where No SM_DRAW_PARTIAL_FILLER Has Been Chosen
-                    else:
-                        dc.DrawArc(x, y, xold, yold, centerX, centerY)
+                                                
+                        dc.DrawArc(xs1, ys1, xe1, ye1, centerX, centerY)
 
-            else:
-                if self._extrastyle & SM_DRAW_PARTIAL_FILLER and self._extrastyle & SM_DRAW_SECTORS:
-                    dc.SetBrush(wx.Brush(fillercolour))                
-                    dc.DrawArc(xs2, ys2, xe2, ye2, centerX, centerY)
-                    x, y = self.CircleCoords(sectorradius, angle, centerX, centerY)
-                    dc.SetBrush(wx.Brush(colours[ii]))
-                    dc.DrawArc(xs1, ys1, xe1, ye1, centerX, centerY)
-                    x = xs2
-                    y = ys2
-            
-            xold = x
-            yold = y
-
-            if self._extrastyle & SM_DRAW_PARTIAL_SECTORS:
-                
-                sectorendradius = radius - 10.0*self.scale
-                sectorstartradius = radius
-
-                xps, yps = self.CircleCoords(sectorstartradius, angle, centerX, centerY)
-                
-                if ii > 0:
-                    dc.SetBrush(wx.Brush(colours[ii-1]))
-                    dc.DrawArc(xps, yps, xpsold, ypsold, centerX, centerY)
-                    
-                xpsold = xps
-                ypsold = yps
-        
-
-        if self._extrastyle & SM_DRAW_PARTIAL_SECTORS:
-            
-            xps1, yps1 = self.CircleCoords(sectorendradius, -endangle+2*offset, centerX, centerY)
-            xps2, yps2 = self.CircleCoords(sectorendradius, -startangle-2*offset, centerX, centerY)
-                
-            dc.SetBrush(wx.Brush(speedbackground))
-            dc.DrawArc(xps1, yps1, xps2, yps2, centerX, centerY)
-                
-
-        if self._extrastyle & SM_DRAW_GRADIENT:
-
-            dc.SetPen(wx.TRANSPARENT_PEN)
-
-            xcurrent, ycurrent = self.CircleCoords(radius, accelangle, centerX, centerY)
-            
-            # calculate gradient coefficients
-            col2 = self.GetSecondGradientColour()
-            col1 = self.GetFirstGradientColour()
-            
-            r1, g1, b1 = int(col1.Red()), int(col1.Green()), int(col1.Blue())
-            r2, g2, b2 = int(col2.Red()), int(col2.Green()), int(col2.Blue())
-
-            flrect = float(radius+self.scale)
-
-            numsteps = 200
-            
-            rstep = float((r2 - r1)) / numsteps
-            gstep = float((g2 - g1)) / numsteps
-            bstep = float((b2 - b1)) / numsteps
-
-            rf, gf, bf = 0, 0, 0
-            
-            radiusteps = flrect/numsteps
-            interface = 0
-            
-            for ind in range(numsteps+1):
-                currCol = (r1 + rf, g1 + gf, b1 + bf)
-                dc.SetBrush(wx.Brush(currCol))
-
-                gradradius = flrect - radiusteps*ind
-                xst1, yst1 = self.CircleCoords(gradradius, -endangle, centerX, centerY)
-                xen1, yen1 = self.CircleCoords(gradradius, -startangle-offset, centerX, centerY)
-
-                if self._extrastyle & SM_DRAW_PARTIAL_FILLER:
-                    if gradradius >= fillerendradius:
-                        if direction == "Advance":
-                            dc.DrawArc(xstart, ystart, xcurrent, ycurrent, centerX, centerY)
-                        else:
-                            dc.DrawArc(xcurrent, ycurrent, xend, yend, centerX, centerY)
-                    else:
-                        if interface == 0:
-                            interface = 1
-                            myradius = fillerendradius + 1
-                            xint1, yint1 = self.CircleCoords(myradius, -endangle, centerX, centerY)
-                            xint2, yint2 = self.CircleCoords(myradius, -startangle-offset, centerX, centerY)
-                            dc.DrawArc(xint1, yint1, xint2, yint2, centerX, centerY)
-                            
-                        dc.DrawArc(xst1, yst1, xen1, yen1, centerX, centerY)
-                else:
-                    if self._extrastyle & SM_DRAW_PARTIAL_SECTORS:
-                        if gradradius <= sectorendradius:
-                            if interface == 0:
-                                interface = 1
-                                myradius = sectorendradius + 1
-                                xint1, yint1 = self.CircleCoords(myradius, -endangle, centerX, centerY)
-                                xint2, yint2 = self.CircleCoords(myradius, -startangle-offset, centerX, centerY)
-                                dc.DrawArc(xint1, yint1, xint2, yint2, centerX, centerY)
+                        if self._extrastyle & SM_DRAW_SECTORS:
+                            dc.SetBrush(wx.Brush(colours[ii-1]))
+                            # Here We Draw The Rest Of The Sector In Which The Current Value Is
+                            if direction == "Advance":
+                                dc.DrawArc(xs1, ys1, x, y, centerX, centerY)
+                                x = xs1
+                                y = ys1
                             else:
-                                dc.DrawArc(xst1, yst1, xen1, yen1, centerX, centerY)
-                    else:
-                        dc.DrawArc(xst1, yst1, xen1, yen1, centerX, centerY)
+                                dc.DrawArc(xe2, ye2, x, y, centerX, centerY)
+                            
+                    elif self._extrastyle & SM_DRAW_SECTORS:
+                        dc.SetBrush(wx.Brush(colours[ii-1]))
                         
-                rf = rf + rstep
-                gf = gf + gstep
-                bf = bf + bstep            
+                        # Here We Still Use The SM_DRAW_PARTIAL_FILLER Style, But We Are Not
+                        # In The Sector Where The Current Value Resides
+                        if self._extrastyle & SM_DRAW_PARTIAL_FILLER and ii != intersection:
+                            if direction == "Advance":
+                                dc.DrawArc(x, y, xold, yold, centerX, centerY)
+                            else:
+                                if ii < intersection:
+                                    dc.DrawArc(x, y, xold, yold, centerX, centerY)
 
-        textheight = 0
-
-        # Get The Ticks And The Ticks Colour
-        ticks = self.GetTicks()[:]
-        tickscolour = self.GetTicksColour()
-
-        if direction == "Reverse":
-            ticks.reverse()
-
-        if self._extrastyle & SM_DRAW_SECONDARY_TICKS:
-            ticknum = self.GetNumberOfSecondaryTicks()
-            oldinterval = intervals[0]
-
-        dc.SetPen(wx.Pen(tickscolour, 1))
-        dc.SetBrush(wx.Brush(tickscolour))
-        dc.SetTextForeground(tickscolour)
-        
-        # Get The Font For The Ticks
-        tfont, fontsize = self.GetTicksFont()
-        tfont = tfont[0]
-        myfamily = tfont.GetFamily()
-
-        fsize = self.scale*fontsize
-        tfont.SetPointSize(int(fsize))
-        tfont.SetFamily(myfamily)
-        dc.SetFont(tfont)
-
-        if self._extrastyle & SM_DRAW_FANCY_TICKS:
-            facename = tfont.GetFaceName()
-            ffamily = familyname[fontfamily.index(tfont.GetFamily())]
-            fweight = weightsname[weights.index(tfont.GetWeight())]
-            fstyle = stylesname[styles.index(tfont.GetStyle())]
-            fcolour = wx.TheColourDatabase.FindName(tickscolour)
-            
-        textheight = 0
-
-        # Draw The Ticks And The Markers (Text Ticks)
-        for ii, angles in enumerate(textangles):
-            
-            strings = ticks[ii]
-            if self._extrastyle & SM_DRAW_FANCY_TICKS == 0:
-                width, height, dummy, dummy = dc.GetFullTextExtent(strings, tfont)
-                textheight = height
-            else:
-                width, height, dummy = fancytext.GetFullExtent(strings, dc)
-                textheight = height
-
-            lX = dc.GetCharWidth()/2.0
-            lY = dc.GetCharHeight()/2.0
-        
-            if self._extrastyle & SM_ROTATE_TEXT:
-                angis = colourangles[ii] - float(width)/(2.0*radius)
-                x, y = self.CircleCoords(radius-10.0*self.scale, angis, centerX, centerY)
-                dc.DrawRotatedText(strings, x, y, angles)
-            else:
-                angis = colourangles[ii]
-                if self._extrastyle & SM_DRAW_FANCY_TICKS == 0:
-                    x, y = self.CircleCoords(radius-10*self.scale, angis, centerX, centerY)
-                    lX = lX*len(strings)
-                    x = x - lX - width*cos(angis)/2.0
-                    y = y - lY - height*sin(angis)/2.0
-        
-                if self._extrastyle & SM_DRAW_FANCY_TICKS:
-                    fancystr = '<font family="' + ffamily + '" size="' + str(int(fsize)) + '" weight="' + fweight + '"'
-                    fancystr = fancystr + ' color="' + fcolour + '"' + ' style="' + fstyle + '"> ' + strings + ' </font>'
-
-                    width, height, dummy = fancytext.GetFullExtent(fancystr, dc)
-                    x, y = self.CircleCoords(radius-10*self.scale, angis, centerX, centerY)
-                    x = x - width/2.0 - width*cos(angis)/2.0
-                    y = y - height/2.0 - height*sin(angis)/2.0
-                    fancytext.RenderToDC(fancystr, dc, x, y)
-                else:
-                    dc.DrawText(strings, x, y)
-
-            # This Is The Small Rectangle --> Tick Mark
-            rectangle = colourangles[ii] + pi/2.0
-
-            sinrect = sin(rectangle)
-            cosrect = cos(rectangle)
-            x1 = xcoords[ii] - self.scale*cosrect
-            y1 = ycoords[ii] - self.scale*sinrect
-            x2 = x1 + 3*self.scale*cosrect
-            y2 = y1 + 3*self.scale*sinrect
-            x3 = x1 - 10*self.scale*sinrect
-            y3 = y1 + 10*self.scale*cosrect
-            x4 = x3 + 3*self.scale*cosrect
-            y4 = y3 + 3*self.scale*sinrect            
-
-            points = [(x1, y1), (x2, y2), (x4, y4), (x3, y3)]
-            
-            dc.DrawPolygon(points)
-
-            if self._extrastyle & SM_DRAW_SECONDARY_TICKS:
-                if ii > 0:
-                    newinterval = intervals[ii]
-                    oldinterval = intervals[ii-1]
-                        
-                    spacing = (newinterval - oldinterval)/float(ticknum+1)
-                    
-                    for tcount in xrange(ticknum):
-                        if direction == "Advance":
-                            oldinterval = (oldinterval + spacing) - start
-                            stint = oldinterval
+                        # This Is The Case Where No SM_DRAW_PARTIAL_FILLER Has Been Chosen
                         else:
-                            oldinterval = start + (oldinterval + spacing)
-                            stint = end - oldinterval
+                            dc.DrawArc(x, y, xold, yold, centerX, centerY)
 
-                        angle = (stint/float(span))*(startangle-endangle) - startangle
-                        rectangle = angle + pi/2.0
-                        sinrect = sin(rectangle)
-                        cosrect = cos(rectangle)
-                        xt, yt = self.CircleCoords(radius, angle, centerX, centerY)
-                        x1 = xt - self.scale*cosrect
-                        y1 = yt - self.scale*sinrect
-                        x2 = x1 + self.scale*cosrect
-                        y2 = y1 + self.scale*sinrect
-                        x3 = x1 - 6*self.scale*sinrect
-                        y3 = y1 + 6*self.scale*cosrect
-                        x4 = x3 + self.scale*cosrect
-                        y4 = y3 + self.scale*sinrect   
-
-                        points = [(x1, y1), (x2, y2), (x4, y4), (x3, y3)]
-                        
-                        dc.DrawPolygon(points)
-
-                    oldinterval = newinterval                        
-
-        tfont.SetPointSize(fontsize)
-        tfont.SetFamily(myfamily)
-        
-        
-        self.SetTicksFont(tfont)
-        
-        # Draw The External Arc
-        dc.SetBrush(wx.TRANSPARENT_BRUSH)
-
-        if self._drawarc:
-            dc.SetPen(wx.Pen(self.GetArcColour(), 2.0))
-            # If It's Not A Complete Circle, Draw The Connecting Lines And The Arc       
-            if abs(abs(startangle - endangle) - 2*pi) > 1.0/180.0:
-                dc.DrawArc(xstart, ystart, xend, yend, centerX, centerY)
-                dc.DrawLine(xstart, ystart, centerX, centerY)
-                dc.DrawLine(xend, yend, centerX, centerY)
-            else:
-                # Draw A Circle, Is A 2*pi Extension Arc = Complete Circle
-                dc.DrawCircle(centerX, centerY, radius)
-
-    
-        # Here We Draw The Text In The Middle, Near The Start Of The Arrow (If Present)
-        # This Is Like The "Km/h" Or "mph" Text In The Cars
-        if self._extrastyle & SM_DRAW_MIDDLE_TEXT:
-
-            middlecolour = self.GetMiddleTextColour()            
-            middletext = self.GetMiddleText()
-            middleangle = (startangle + endangle)/2.0
-            
-            middlefont, middlesize = self.GetMiddleTextFont()
-            middlesize = self.scale*middlesize
-            middlefont.SetPointSize(int(middlesize))
-            dc.SetFont(middlefont)
-
-            mw, mh, dummy, dummy = dc.GetFullTextExtent(middletext, middlefont)
-            
-            newx = centerX + 1.5*mw*cos(middleangle) - mw/2.0
-            newy = centerY - 1.5*mh*sin(middleangle) - mh/2.0
-            dc.SetTextForeground(middlecolour)
-            dc.DrawText(middletext, newx, newy)
-
-        # Here We Draw The Icon In The Middle, Near The Start Of The Arrow (If Present)
-        # This Is Like The "Fuel" Icon In The Cars                
-        if self._extrastyle & SM_DRAW_MIDDLE_ICON:
-        
-            middleicon = self.GetMiddleIcon()
-            middlewidth, middleheight = self.GetMiddleIconDimens()
-            middleicon.SetWidth(middlewidth*self.scale)
-            middleicon.SetHeight(middleheight*self.scale)
-            middleangle = (startangle + endangle)/2.0
-            
-            mw = middleicon.GetWidth()
-            mh = middleicon.GetHeight()
-
-            newx = centerX + 1.5*mw*cos(middleangle) - mw/2.0
-            newy = centerY - 1.5*mh*sin(middleangle) - mh/2.0
-
-            dc.DrawIcon(middleicon, newx, newy)
-
-            # Restore Icon Dimension, If Not Something Strange Happens
-            middleicon.SetWidth(middlewidth)
-            middleicon.SetHeight(middleheight)
-                        
-                        
-        # Requested To Draw The Hand
-        if self._extrastyle & SM_DRAW_HAND:
-
-            handstyle = self.GetHandStyle()
-            handcolour = self.GetHandColour()    
-            
-            # Calculate The Data For The Hand
-            if textheight == 0:
-                maxradius = radius-10*self.scale
-            else:
-                maxradius = radius-5*self.scale-textheight
-                
-            xarr, yarr = self.CircleCoords(maxradius, accelangle, centerX, centerY)
-
-            if handstyle == "Arrow":
-                x1, y1 = self.CircleCoords(maxradius, accelangle - 4.0/180, centerX, centerY)
-                x2, y2 = self.CircleCoords(maxradius, accelangle + 4.0/180, centerX, centerY)
-                x3, y3 = self.CircleCoords(maxradius+3*(abs(xarr-x1)), accelangle, centerX, centerY)
-
-                newx = centerX + 4*cos(accelangle)*self.scale
-                newy = centerY + 4*sin(accelangle)*self.scale
-    
-            else:
-
-                x1 = centerX + 4*self.scale*sin(accelangle)
-                y1 = centerY - 4*self.scale*cos(accelangle)
-                x2 = xarr
-                y2 = yarr
-                x3 = centerX - 4*self.scale*sin(accelangle)
-                y3 = centerY + 4*self.scale*cos(accelangle)
-
-                x4, y4 = self.CircleCoords(5*self.scale*sqrt(3), accelangle+pi, centerX, centerY)   
-                
-            if self._extrastyle & SM_DRAW_SHADOW:            
-
-                if handstyle == "Arrow":
-                    # Draw The Shadow
-                    shadowcolour = self.GetShadowColour()
-                    dc.SetPen(wx.Pen(shadowcolour, 5*log(self.scale+1)))
-                    dc.SetBrush(wx.Brush(shadowcolour))
-                    shadowdistance = 2.0*self.scale
-                    dc.DrawLine(newx + shadowdistance, newy + shadowdistance,
-                                xarr + shadowdistance, yarr + shadowdistance)
-                    
-                    dc.DrawPolygon([(x1+shadowdistance, y1+shadowdistance),
-                                    (x2+shadowdistance, y2+shadowdistance),
-                                    (x3+shadowdistance, y3+shadowdistance)])
                 else:
-                    # Draw The Shadow
-                    shadowcolour = self.GetShadowColour()
-                    dc.SetBrush(wx.Brush(shadowcolour))
-                    dc.SetPen(wx.Pen(shadowcolour, 1.0))
-                    shadowdistance = 1.5*self.scale
-                    
-                    dc.DrawPolygon([(x1+shadowdistance, y1+shadowdistance),
-                                    (x2+shadowdistance, y2+shadowdistance),
-                                    (x3+shadowdistance, y3+shadowdistance),
-                                    (x4+shadowdistance, y4+shadowdistance)])
-
-            if handstyle == "Arrow":
+                    if self._extrastyle & SM_DRAW_PARTIAL_FILLER and self._extrastyle & SM_DRAW_SECTORS:
+                        dc.SetBrush(wx.Brush(fillercolour))                
+                        dc.DrawArc(xs2, ys2, xe2, ye2, centerX, centerY)
+                        x, y = self.CircleCoords(sectorradius, angle, centerX, centerY)
+                        #dc.SetBrush(wx.Brush(colours[ii]))
+                        #dc.DrawArc(xs1, ys1, xe1, ye1, centerX, centerY)
+                        x = xs2
+                        y = ys2
                 
-                dc.SetPen(wx.Pen(handcolour, 1.5))
-                
-                # Draw The Small Circle In The Center --> The Hand "Holder"
-                dc.SetBrush(wx.Brush(speedbackground))
-                dc.DrawCircle(centerX, centerY, 4*self.scale)
+                xold = x
+                yold = y
 
-                dc.SetPen(wx.Pen(handcolour, 5*log(self.scale+1)))
-                # Draw The "Hand", An Arrow
-                dc.DrawLine(newx, newy, xarr, yarr)
+        
 
-                # Draw The Arrow Pointer
-                dc.SetBrush(wx.Brush(handcolour))
-                dc.DrawPolygon([(x1, y1), (x2, y2), (x3, y3)])
-
-            else:
-                
-                # Draw The Hand Pointer
-                dc.SetPen(wx.Pen(handcolour, 1.5))
-                dc.SetBrush(wx.Brush(handcolour))
-                dc.DrawPolygon([(x1, y1), (x2, y2), (x3, y3), (x4, y4)])
-
-                # Draw The Small Circle In The Center --> The Hand "Holder"
-                dc.SetBrush(wx.Brush(speedbackground))
-                dc.DrawCircle(centerX, centerY, 4*self.scale)             
-
-
-        #dc.EndDrawing()
-
+  
 
     def SetIntervals(self, intervals=None):
         """ Sets The Intervals For SpeedMeter (Main Ticks Numeric Values)."""
@@ -1016,7 +668,8 @@ class SpeedMeter(BufferedWindow):
 
     def SetSpeedValue(self, value=None):
         """ Sets The Current Value For SpeedMeter. """
-
+        #self._speedvalue = -10
+        #return
         if value is None:
             value = (max(self._intervals) - min(self._intervals))/2.0
         else:
@@ -1028,6 +681,7 @@ class SpeedMeter(BufferedWindow):
                 return
             
         self._speedvalue = value
+        print('self._speedvalue = ', self._speedvalue)
         try:
             self.UpdateDrawing()
         except:
