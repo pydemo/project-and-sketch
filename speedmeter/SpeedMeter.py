@@ -32,6 +32,9 @@
 #
 # End Of Comments
 # --------------------------------------------------------------------------- #
+import sys, math
+from pprint import pprint as pp
+e=sys.exit
 xrange = range
 
 """Description:
@@ -305,7 +308,7 @@ class SpeedMeter(BufferedWindow):
     def __init__(self, parent, id=wx.ID_ANY, pos=wx.DefaultPosition,
                  size=wx.DefaultSize, extrastyle=SM_DRAW_HAND,
                  bufferedstyle=SM_BUFFERED_DC,
-                 mousestyle=0):
+                 mousestyle=0, interval=10):
         """ Default Class Constructor.
 
         Non Standard wxPython Parameters Are:
@@ -348,6 +351,7 @@ class SpeedMeter(BufferedWindow):
         self._extrastyle = extrastyle
         self._bufferedstyle = bufferedstyle
         self._mousestyle = mousestyle
+        self.interval=interval
 
         if self._extrastyle & SM_DRAW_SECTORS and self._extrastyle & SM_DRAW_GRADIENT:
             errstr = "\nERROR: Incompatible Options: SM_DRAW_SECTORS Can Not Be Used In "
@@ -378,10 +382,11 @@ class SpeedMeter(BufferedWindow):
             
         
         self.SetAngleRange()
+        #e()
         self.SetIntervals()
         self.SetSpeedValue()
         self.SetIntervalColours()
-        self.SetArcColour()
+        #self.SetArcColour()
         #self.SetTicks()
         #self.SetTicksFont()
         #self.SetTicksColour()
@@ -413,7 +418,7 @@ class SpeedMeter(BufferedWindow):
         Here All The Chosen Styles Are Applied. """
         
         size  = self.GetClientSize()
-        
+        #print(size, 222222)
         if size.x < 21 or size.y < 21:
             return
 
@@ -462,9 +467,13 @@ class SpeedMeter(BufferedWindow):
 
         # Get The Angle Of Existance Of The Sector
         anglerange = self.GetAngleRange()
+        #pp(anglerange)
+        #pp(self._anglerange)
+        #e()
         startangle = anglerange[1]
+        #startangle=math.pi/2
         endangle = anglerange[0]
-
+        #endangle = endangle*2
         self.StartAngle = startangle
         self.EndAngle = endangle
 
@@ -495,7 +504,7 @@ class SpeedMeter(BufferedWindow):
         self.Span = span
             
         # Get The Current Value For The SpeedMeter
-        currentvalue = self.GetSpeedValue()
+        currentvalue = self.GetSpeedValue() #+ 7*(10/self.interval)
 
         # Get The Direction Of The SpeedMeter
         direction = self.GetDirection()
@@ -508,38 +517,40 @@ class SpeedMeter(BufferedWindow):
             currentvalue = end - currentvalue
 
         # This Because DrawArc Does Not Draw Last Point
-        offset = 0.1*self.scale/180.0        
+        offset = 0.1*self.scale/180     
 
         xstart, ystart = self.CircleCoords(radius+1, -endangle, centerX, centerY)
         xend, yend = self.CircleCoords(radius+1, -startangle-offset, centerX, centerY)
-            
+        
+        #startangle=0
         # Calculate The Angle For The Current Value Of SpeedMeter
         accelangle = (currentvalue - start)/float(span)*(startangle-endangle) - startangle
-
+        print('accelangle = ' ,accelangle, currentvalue)
         dc.SetPen(wx.TRANSPARENT_PEN)
 
         if self._extrastyle & SM_DRAW_PARTIAL_FILLER:
-            r=165.0
-            # Get Some Data For The Partial Filler
-            fillercolour = self.GetFillerColour()                
-            fillerendradius = radius - r*self.scale
-            fillerstartradius = radius
-            
-            if direction == "Advance":
-                fillerstart = accelangle
-                fillerend = -startangle
-            else:
-                fillerstart = -endangle
-                fillerend = accelangle
+            if 1:
+                r=170.0
+                # Get Some Data For The Partial Filler
+                fillercolour = self.GetFillerColour()                
+                fillerendradius = radius - r*self.scale
+                fillerstartradius = radius
+                
+                if direction == "Advance":
+                    fillerstart = accelangle
+                    fillerend = -startangle
+                else:
+                    fillerstart = -endangle
+                    fillerend = accelangle
 
-            xs1, ys1 = self.CircleCoords(fillerendradius, fillerstart, centerX, centerY)
-            xe1, ye1 = self.CircleCoords(fillerendradius, fillerend, centerX, centerY)
-            xs2, ys2 = self.CircleCoords(fillerstartradius, fillerstart, centerX, centerY)
-            xe2, ye2 = self.CircleCoords(fillerstartradius, fillerend, centerX, centerY)
+                #xs1, ys1 = self.CircleCoords(fillerendradius, fillerstart, centerX, centerY)
+                #xe1, ye1 = self.CircleCoords(fillerendradius, fillerend, centerX, centerY)
+                xs2, ys2 = self.CircleCoords(fillerstartradius, fillerstart, centerX, centerY)
+                xe2, ye2 = self.CircleCoords(fillerstartradius, fillerend, centerX, centerY)
 
-            # Get The Sector In Which The Current Value Is
-            intersection = self.GetIntersection(currentvalue, intervals)
-            sectorradius = radius - r*self.scale
+                # Get The Sector In Which The Current Value Is
+                intersection = self.GetIntersection(currentvalue, intervals)
+                sectorradius = radius - r*self.scale
             
         else:
             
@@ -549,7 +560,7 @@ class SpeedMeter(BufferedWindow):
             
 
         # This Is Needed To Fill The Partial Sector Correctly
-        xold, yold = self.CircleCoords(radius, startangle+endangle, centerX, centerY)
+        #xold, yold = self.CircleCoords(radius, startangle+endangle, centerX, centerY)
         if 1:
             # Draw The Sectors        
             for ii, interval in enumerate(intervals):
@@ -570,21 +581,21 @@ class SpeedMeter(BufferedWindow):
                 ycoords.append(ytick)
                 x = xtick
                 y = ytick
-
-                if self._extrastyle & SM_DRAW_SECTORS:                
-                    if self._extrastyle & SM_DRAW_PARTIAL_FILLER:
-                        if direction == "Advance":
-                            if current > currentvalue:
-                                x, y = self.CircleCoords(radius, angle, centerX, centerY)                    
-                            else:
-                                x, y = self.CircleCoords(sectorradius, angle, centerX, centerY)
-                        else:
-                            if current < end - currentvalue:
-                                x, y = self.CircleCoords(radius, angle, centerX, centerY)                    
-                            else:
-                                x, y = self.CircleCoords(sectorradius, angle, centerX, centerY)
-                    else:
-                        x, y = self.CircleCoords(radius, angle, centerX, centerY)
+                if 1:
+                    if self._extrastyle & SM_DRAW_SECTORS:                
+                        if self._extrastyle & SM_DRAW_PARTIAL_FILLER:
+                            if direction == "Advance":
+                                if current > currentvalue:
+                                    x, y = self.CircleCoords(radius, angle, centerX, centerY)                    
+                                else:
+                                    x, y = self.CircleCoords(sectorradius, angle, centerX, centerY)
+                            if 0:
+                                if current < end - currentvalue:
+                                    x, y = self.CircleCoords(radius, angle, centerX, centerY)                    
+                                else:
+                                    x, y = self.CircleCoords(sectorradius, angle, centerX, centerY)
+                        #else:
+                        #    x, y = self.CircleCoords(radius, angle, centerX, centerY)
                         
 
                 if ii > 0 :
@@ -593,56 +604,58 @@ class SpeedMeter(BufferedWindow):
                         # A "Reverse" Direction, First We Draw The Partial Sector, Next The Filler
 
                         dc.SetBrush(wx.Brush(speedbackground))
+                        if 0:
+                            if direction == "Reverse":
+                                if self._extrastyle & SM_DRAW_SECTORS:
+                                    dc.SetBrush(wx.Brush(colours[ii-1]))
+                                    
+                                dc.DrawArc(xe2, ye2, xold, yold, centerX, centerY)
                         
-                        if direction == "Reverse":
+                        if 0:
                             if self._extrastyle & SM_DRAW_SECTORS:
                                 dc.SetBrush(wx.Brush(colours[ii-1]))
-                                
-                            dc.DrawArc(xe2, ye2, xold, yold, centerX, centerY)
-                        
-                        if self._extrastyle & SM_DRAW_SECTORS:
-                            dc.SetBrush(wx.Brush(colours[ii-1]))
-                        else:
-                            dc.SetBrush(wx.Brush(speedbackground))
+                            else:
+                                dc.SetBrush(wx.Brush(speedbackground))
 
                                                 
-                        dc.DrawArc(xs1, ys1, xe1, ye1, centerX, centerY)
-
-                        if self._extrastyle & SM_DRAW_SECTORS:
-                            dc.SetBrush(wx.Brush(colours[ii-1]))
-                            # Here We Draw The Rest Of The Sector In Which The Current Value Is
-                            if direction == "Advance":
-                                dc.DrawArc(xs1, ys1, x, y, centerX, centerY)
-                                x = xs1
-                                y = ys1
-                            else:
-                                dc.DrawArc(xe2, ye2, x, y, centerX, centerY)
+                        #dc.DrawArc(xs1, ys1, xe1, ye1, centerX, centerY)
+                        if 0:
+                            if self._extrastyle & SM_DRAW_SECTORS:
+                                dc.SetBrush(wx.Brush(colours[ii-1]))
+                                # Here We Draw The Rest Of The Sector In Which The Current Value Is
+                                if direction == "Advance":
+                                    dc.DrawArc(xs1, ys1, x, y, centerX, centerY)
+                                    x = xs1
+                                    y = ys1
+                                else:
+                                    dc.DrawArc(xe2, ye2, x, y, centerX, centerY)
                             
                     elif self._extrastyle & SM_DRAW_SECTORS:
                         dc.SetBrush(wx.Brush(colours[ii-1]))
-                        
-                        # Here We Still Use The SM_DRAW_PARTIAL_FILLER Style, But We Are Not
-                        # In The Sector Where The Current Value Resides
-                        if self._extrastyle & SM_DRAW_PARTIAL_FILLER and ii != intersection:
-                            if direction == "Advance":
-                                dc.DrawArc(x, y, xold, yold, centerX, centerY)
-                            else:
-                                if ii < intersection:
+                        if 1:
+                            # Here We Still Use The SM_DRAW_PARTIAL_FILLER Style, But We Are Not
+                            # In The Sector Where The Current Value Resides
+                            if self._extrastyle & SM_DRAW_PARTIAL_FILLER and ii != intersection:
+                                if direction == "Advance":
                                     dc.DrawArc(x, y, xold, yold, centerX, centerY)
+                                else:
+                                    if ii < intersection:
+                                        dc.DrawArc(x, y, xold, yold, centerX, centerY)
 
-                        # This Is The Case Where No SM_DRAW_PARTIAL_FILLER Has Been Chosen
-                        else:
-                            dc.DrawArc(x, y, xold, yold, centerX, centerY)
+                            # This Is The Case Where No SM_DRAW_PARTIAL_FILLER Has Been Chosen
+                            else:
+                                dc.DrawArc(x, y, xold, yold, centerX, centerY)
 
                 else:
-                    if self._extrastyle & SM_DRAW_PARTIAL_FILLER and self._extrastyle & SM_DRAW_SECTORS:
-                        dc.SetBrush(wx.Brush(fillercolour))                
-                        dc.DrawArc(xs2, ys2, xe2, ye2, centerX, centerY)
-                        x, y = self.CircleCoords(sectorradius, angle, centerX, centerY)
-                        #dc.SetBrush(wx.Brush(colours[ii]))
-                        #dc.DrawArc(xs1, ys1, xe1, ye1, centerX, centerY)
-                        x = xs2
-                        y = ys2
+                    if 1:
+                        if self._extrastyle & SM_DRAW_PARTIAL_FILLER and self._extrastyle & SM_DRAW_SECTORS:
+                            dc.SetBrush(wx.Brush(fillercolour))                
+                            dc.DrawArc(xs2, ys2, xe2, ye2, centerX, centerY)
+                            x, y = self.CircleCoords(sectorradius, angle, centerX, centerY)
+                            #dc.SetBrush(wx.Brush(colours[ii]))
+                            #dc.DrawArc(xs1, ys1, xe1, ye1, centerX, centerY)
+                            x = xs2
+                            y = ys2
                 
                 xold = x
                 yold = y
@@ -722,7 +735,7 @@ class SpeedMeter(BufferedWindow):
             if not hasattr(self, "_anglerange"):
                 errstr = "\nERROR: Impossible To Set Interval Colours,"
                 errstr = errstr + " Please Define The Intervals Ranges Before."
-                raise errstr
+                raise Exception (errstr)
                 return
             
             colours = [wx.WHITE]*len(self._intervals)
@@ -730,7 +743,7 @@ class SpeedMeter(BufferedWindow):
             if len(colours) != len(self._intervals) - 1:
                 errstr = "\nERROR: Length Of Colour List Does Not Match Length"
                 errstr = errstr + " Of Intervals Ranges List."
-                raise errstr
+                raise Exception (errstr)
                 return
 
         self._intervalcolours = colours

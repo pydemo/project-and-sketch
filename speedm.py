@@ -26,7 +26,7 @@ class MyFrame(wx.Frame):
                                           )
 
         # We Want To Simulate A Clock. Somewhat Tricky, But Did The Job
-        self.SpeedWindow.SetAngleRange(pi/2, 5*pi/2)
+        self.SpeedWindow.SetAngleRange(0, pi)
 
         intervals = range(0, 13)
         self.SpeedWindow.SetIntervals(intervals)
