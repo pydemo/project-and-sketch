@@ -55,7 +55,7 @@ wfname=tabname='latest'
 
 
 
-workflow=cli=None
+workflow=gui=None
 
 SUCCESS = 0
 
@@ -77,7 +77,7 @@ else:
 		
 @click.command()
 @click.option('-dcf', 	'--db_config_file',   	default = './config/db_config.DEV.json', 	help = 'App config.', 				required=True )
-@click.option('-pcf', 	'--proc_config_file',	default = 'config/ui/default.json', 		help = 'Process/procedure config.', required=True )
+@click.option('-pcf', 	'--proc_config_file',	default = 'config/gui/default.json', 		help = 'Process/procedure config.', required=True )
 @click.option('-rte', 	'--runtime_environment',default = 'DEV',	help = 'Runtime.') # DEV/UAT/PROD
 @click.option('-nopp', 	'--num_of_proc_params', default = None,		help="ParmsConfig", type=int, 										required=False)
 @click.option('-pa', 	'--proc_params', 		nargs=int(nopp) if nopp else 0, help="Process/procedure params", type=str, 				required=False)
@@ -96,7 +96,7 @@ else:
 
 #@log_calls
 def main(**kwargs):
-	global home, app_name, workflow, cli, conn_pool, tabname
+	global home, app_name, workflow, gui, conn_pool, tabname
 	#pp(kwargs)
 	if kwargs['runtime_environment'] in ['DEV']:
 		assert 'db_config.PROD.json' not in ''.join(sys.argv), 'Please, set [-rte PROD] for prod env.'
@@ -118,31 +118,25 @@ def main(**kwargs):
 
 	start_time = time.time()
 	clifn='%s.py' % wfname
-	clipath=os.path.join('include','ui', clifn)
+	clipath=os.path.join('include','gui', 'main','run.py')
 	
 	builtins.home=home
 	builtins.app_name=app_name
 	builtins.workflow=wfname
-	builtins.table_name=tabname
-	builtins.app_init=(cli, conn_pool)
+	builtins.app_init=(gui, conn_pool)
 	from include.cli_utils import load_module
-	log=logging.getLogger('cli')
+	log=logging.getLogger('gui')
 	log.info('Host: [%s], User: [%s]' % (socket.gethostname(), getpass.getuser()))
 	log.info('Home: [%s]' % home)
-	daemon=kwargs.get('daemon')
-	isec=kwargs.get('interval_seconds')
-	while True:
-		if 1:
-			climod=load_module(fn=clipath,app_init=app_init)
-			assert hasattr(climod, wfname), 'Cli module "%s" does not have cli class "%s"'  % (clifn, wfname)
-			api=getattr(climod, wfname)
-			cli=api(**kwargs)
-			workflow=load_module(fn=wffile,app_init=(cli, conn_pool))
-			workflow.run()
-		if not daemon:
-			break
-		else:
-			time.sleep(isec)
+
+	if 1:
+		climod=load_module(fn=clipath,app_init=app_init)
+		assert hasattr(climod, wfname), 'Gui module "%s" does not have gui class "%s"'  % (clifn, wfname)
+		api=getattr(climod, wfname)
+		gui=api(**kwargs)
+		workflow=load_module(fn=wffile,app_init=(gui, conn_pool))
+		workflow.run()
+
 
 	
 
@@ -158,11 +152,11 @@ if __name__ == "__main__":
 		error = err_log.getvalue()
 
 		if not log:
-			log=logging.getLogger('cli')
+			log=logging.getLogger('gui')
 		
 		if 1:
 			print ('#' * 80)
-			print ('ERROR while running cli')
+			print ('ERROR while running gui')
 			print ('#' * 80)
 			if hasattr(log,'handler') and log.handler:
 				log.error(error)
@@ -182,9 +176,9 @@ if __name__ == "__main__":
 			builtins.app_name=app_name
 			builtins.workflow=wfname
 			builtins.table_name=tabname
-			builtins.app_init=(cli, conn_pool)
-			from include.utils import  send_crash_email, get_log_for_email, clierr, get_emails
-			log=logging.getLogger('cli')
+			builtins.app_init=(gui, conn_pool)
+			from include.cli_utils import  send_crash_email, get_log_for_email, clierr, get_emails
+			log=logging.getLogger('gui')
 			pp(sys.argv)
 			rte= 'PROD' if 'PROD' in sys.argv else 'DEV'
 			FROM_EMAIL, TO_EMAIL =	get_emails(env=rte)

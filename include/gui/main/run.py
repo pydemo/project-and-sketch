@@ -10,7 +10,7 @@ from pubsub import pub
 from pprint import pprint as pp
 import cv2
 from six import unichr
-from include.utils import TransparentText, keyMap
+from include.gui_utils import TransparentText, keyMap
 from ui.iv.view.ViewerPanel import ViewerPanel
 e=sys.exit
 

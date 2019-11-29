@@ -79,7 +79,7 @@ def get_emails(env):
 	return from_email, to_email
 
 class CliLoggingClass:
-	def __init__(self, home, app_name, workflow, table_name):
+	def __init__(self, home, app_name, workflow,):
 		if 0:
 			self.log = logging.Logger("cli")
 			self.log.stream = sys.stderr
@@ -92,7 +92,7 @@ class CliLoggingClass:
 		tmp_fn = next(tempfile._get_candidate_names())
 		
 		tmpdir =os.getenv('G3_TEMP_DIR', '/tmp')
-		log_dir =os.path.join(tmpdir,app_name, workflow, table_name)
+		log_dir =os.path.join(tmpdir,app_name, workflow)
 		latest_dir = os.path.join(log_dir, 'latest')
 		ts = time.strftime('%Y%m%d_%H%M%S')
 		ts_dir = os.path.join(log_dir, ts)
@@ -146,7 +146,7 @@ class CliLoggingClass:
 		return self.log.debug, self.log.info, self.log.warn, self.log.error
 
 if 1:
-	cli_logging = CliLoggingClass(home, app_name, workflow, table_name)
+	cli_logging = CliLoggingClass(home, app_name, workflow)
 	debug, info, warn, error = cli_logging.get_loggers()
 
 
