@@ -266,7 +266,7 @@ class BufferedWindow(wx.Window):
         
         
        
-            self._Buffer = wx.BitmapFromImage(img)
+            self._Buffer = wx.Bitmap(img)
         else:
             
             
@@ -443,7 +443,7 @@ class SpeedMeter(BufferedWindow):
         
         
        
-            self.faceBitmap = wx.BitmapFromImage(img)
+            self.faceBitmap = wx.Bitmap(img)
         else:
             self.faceBitmap = wx.Bitmap(size.width, size.height)
         

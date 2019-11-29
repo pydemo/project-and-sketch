@@ -1,0 +1,15 @@
+{
+
+"01":{
+	"0:0": {
+		"ImageViewer": {
+			"interval"			: 5,
+			"imageLocation"		: "C:\\Users\\alex_\\OneDrive\\Documents\\Gallery\\2",
+			
+			"imageExt"			: ["jpg", "png"],
+		}
+	}
+},
+
+
+}
